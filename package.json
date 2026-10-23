@@ -1,0 +1,9 @@
+{
+  "name": "careerforge-platform",
+  "version": "1.0.0",
+  "private": true,
+  "description": "CareerForge AI — All-in-One AI Career Companion & Learning Platform",
+  "scripts": {
+    "build": "cd frontend && npm install && npm run build"
+  }
+}

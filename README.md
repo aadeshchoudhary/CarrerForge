@@ -123,7 +123,24 @@ npm run dev
 
 ---
 
-## 5. Automated Test Suite
+## 5. Deploying to Vercel (Production Cloud Hosting)
+
+This repository is pre-configured for **Monorepo Serverless Deployment** on [Vercel](https://vercel.com):
+
+1. **Sign in to Vercel** at [vercel.com](https://vercel.com) using your GitHub account (`aadeshchoudhary`).
+2. Click **"Add New..."** ➔ **"Project"**.
+3. Select and **Import** your repository: `aadeshchoudhary/CarrerForge`.
+4. **Deploy Settings:**
+   - **Framework Preset:** `Vite` (or `Other`)
+   - **Root Directory:** `./` (Default root)
+   - Vercel automatically detects `vercel.json`, builds the React 19 frontend into `frontend/dist`, and deploys the FastAPI backend as a serverless function in `api/index.py`!
+5. Click **"Deploy"**!
+   - Your platform will be live on the web at `https://carrer-forge.vercel.app` (or your custom assigned URL).
+   - Anyone in the world can register, test the AI resume parser, build DOCX resumes, explore companies, practice in the AI Interview Gym, and network in the community!
+
+---
+
+## 6. Automated Test Suite
 
 To run all 24 unit, service, and integration tests covering all 5 phases:
 ```powershell
@@ -134,7 +151,7 @@ cd "C:\Users\Aadesh Choudhary\.gemini\antigravity\scratch\career-platform\backen
 
 ---
 
-## 6. Phased Implementation Roadmap (100% Completed)
+## 7. Phased Implementation Roadmap (100% Completed)
 
 - [x] **Phase 1 (Complete):** Auth, Career ID Profile, App Shell, Dashboard UI with live widgets, Document Resume Parser (PDF/DOCX), and Weighted Explainable Skill-Gap Analyzer.
 - [x] **Phase 2 (Complete):** AI Resume Builder (DOCX exporter), Application Quality Checker, Career Role Finder, Dynamic Career Roadmap Generator, Training Resource Hub, and Preparation Tracker.

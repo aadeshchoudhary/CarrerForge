@@ -31,19 +31,20 @@ from app.api.v1 import (
     opportunities,
 )
 
-# 1. Create DB tables on startup
-Base.metadata.create_all(bind=engine)
+# 1. Create DB tables and seed benchmark data on startup
+try:
+    Base.metadata.create_all(bind=engine)
+    with SessionLocal() as db:
+        seed_database_if_empty(db)
+        seed_learning_resources_if_empty(db)
+        seed_project_catalog_if_empty(db)
+        seed_badges_catalog_if_empty(db)
+        seed_community_data_if_empty(db)
+        seed_opportunity_data_if_empty(db)
+except Exception as e:
+    print(f"Database initialization notice: {e}")
 
-# 2. Seed initial benchmark jobs, skills, learning resources, projects, badges, community, and opportunities
-with SessionLocal() as db:
-    seed_database_if_empty(db)
-    seed_learning_resources_if_empty(db)
-    seed_project_catalog_if_empty(db)
-    seed_badges_catalog_if_empty(db)
-    seed_community_data_if_empty(db)
-    seed_opportunity_data_if_empty(db)
-
-# 3. Create FastAPI app
+# 2. Create FastAPI app
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Backend API engine for the AI-Powered Career Development Platform (College Project)",
@@ -52,10 +53,11 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
-# 4. Configure CORS
+# 3. Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

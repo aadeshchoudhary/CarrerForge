@@ -37,7 +37,21 @@ import {
   UserSkill
 } from '../types';
 
-const API_BASE = 'http://127.0.0.1:8000/api/v1';
+const getApiBaseUrl = (): string => {
+  // If an explicit API URL is set in environment (e.g. Render, Railway, or Vercel Env)
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl) {
+    return envUrl.replace(/\/$/, '') + '/api/v1';
+  }
+  // When running on production (e.g. Vercel same-domain deployment)
+  if (import.meta.env.PROD) {
+    return '/api/v1';
+  }
+  // Local development fallback
+  return 'http://127.0.0.1:8000/api/v1';
+};
+
+const API_BASE = getApiBaseUrl();
 
 export const apiClient = axios.create({
   baseURL: API_BASE,
