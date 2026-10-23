@@ -30,16 +30,27 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  // Default to active demo session so ANY visitor on Vercel gets instant access without login
-  const [token, setToken] = useState<string | null>(
-    () => localStorage.getItem('career_token') || 'demo-access-token-active'
-  );
-  const [handle, setHandle] = useState<string | null>(
-    () => localStorage.getItem('career_handle') || '@aarav_sharma'
-  );
+  const getStoredToken = (): string | null => {
+    const t = localStorage.getItem('career_token');
+    if (!t || t === 'undefined' || t === 'null') {
+      return 'demo-access-token-active';
+    }
+    return t;
+  };
+
+  const getStoredHandle = (): string | null => {
+    const h = localStorage.getItem('career_handle');
+    if (!h || h === 'undefined' || h === 'null') {
+      return '@aarav_sharma';
+    }
+    return h;
+  };
+
+  const [token, setToken] = useState<string | null>(getStoredToken);
+  const [handle, setHandle] = useState<string | null>(getStoredHandle);
   const [career, setCareer] = useState<CareerID | null>(() => {
     const saved = localStorage.getItem('career_profile_data');
-    if (saved) {
+    if (saved && saved !== 'undefined' && saved !== 'null') {
       try {
         return JSON.parse(saved);
       } catch (e) {
@@ -60,7 +71,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('career_profile_data', JSON.stringify(data.career_id));
       }
     } catch (err) {
-      // If backend is not available, continue using client-side profile
       if (!career) {
         setCareer(DEFAULT_CAREER_ID);
       }
@@ -70,14 +80,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, pass: string) => {
     try {
       const res = await api.login({ email, password: pass });
-      const resHandle = res.handle || res.user?.career_id?.handle || '@aarav_sharma';
-      localStorage.setItem('career_token', res.access_token);
+      const validToken = res?.access_token || 'demo-access-token-active';
+      const resHandle = res?.handle || res?.user?.career_id?.handle || '@aarav_sharma';
+      localStorage.setItem('career_token', validToken);
       localStorage.setItem('career_handle', resHandle);
-      setToken(res.access_token);
+      setToken(validToken);
       setHandle(resHandle);
+      if (res?.user?.career_id) {
+        setCareer(res.user.career_id);
+        localStorage.setItem('career_profile_data', JSON.stringify(res.user.career_id));
+      }
       await refreshProfile();
     } catch (err) {
-      // Fallback: grant instant demo access
       setDemoUser();
     }
   };
@@ -85,25 +99,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (payload: { email: string; password: string; full_name: string; handle: string; target_role?: string }) => {
     try {
       const res = await api.register(payload);
-      const resHandle = res.handle || res.user?.career_id?.handle || `@${payload.handle.replace('@', '')}`;
-      localStorage.setItem('career_token', res.access_token);
+      const validToken = res?.access_token || 'demo-access-token-active';
+      const resHandle = res?.handle || res?.user?.career_id?.handle || `@${payload.handle.replace('@', '')}`;
+      localStorage.setItem('career_token', validToken);
       localStorage.setItem('career_handle', resHandle);
-      setToken(res.access_token);
+      setToken(validToken);
       setHandle(resHandle);
+      if (res?.user?.career_id) {
+        setCareer(res.user.career_id);
+        localStorage.setItem('career_profile_data', JSON.stringify(res.user.career_id));
+      }
       await refreshProfile();
     } catch (err) {
-      // Fallback: create client profile
+      const formattedHandle = `@${payload.handle.replace('@', '')}`;
       const localProfile: CareerID = {
         ...DEFAULT_CAREER_ID,
         full_name: payload.full_name,
-        handle: `@${payload.handle.replace('@', '')}`,
+        handle: formattedHandle,
         target_role: payload.target_role || 'Full Stack Developer',
       };
       setCareer(localProfile);
-      setHandle(localProfile.handle);
+      setHandle(formattedHandle);
       setToken('demo-access-token-active');
       localStorage.setItem('career_token', 'demo-access-token-active');
-      localStorage.setItem('career_handle', localProfile.handle);
+      localStorage.setItem('career_handle', formattedHandle);
       localStorage.setItem('career_profile_data', JSON.stringify(localProfile));
     }
   };

@@ -81,11 +81,30 @@ export const apiClient = axios.create({
 
 apiClient.interceptors.request.use((config) => {
   const token = localStorage.getItem('career_token');
-  if (token) {
+  if (token && token !== 'undefined' && token !== 'null') {
     config.headers.Authorization = `Bearer ${token}`;
   }
   return config;
 });
+
+// Response interceptor to catch HTML returned by SPA wildcard rewrites when backend is offline
+apiClient.interceptors.response.use(
+  (response) => {
+    const contentType = String(response.headers['content-type'] || '');
+    const isHtml =
+      typeof response.data === 'string' &&
+      (response.data.includes('<!doctype') ||
+        response.data.includes('<!DOCTYPE') ||
+        response.data.includes('<html') ||
+        contentType.includes('text/html'));
+
+    if (isHtml) {
+      return Promise.reject(new Error('SPA rewrite returned HTML instead of JSON API response'));
+    }
+    return response;
+  },
+  (error) => Promise.reject(error)
+);
 
 // ============================================================================
 // LocalStorage Persistence Helpers for Standalone / Zero-Database Deployment
@@ -119,18 +138,27 @@ export const api = {
   register: async (payload: { email: string; password: string; full_name: string; handle: string; target_role?: string }) => {
     try {
       const res = await apiClient.post('/auth/register', payload);
+      if (!res.data || typeof res.data !== 'object' || !res.data.access_token) {
+        throw new Error('Invalid backend response');
+      }
       return res.data;
     } catch {
+      const formattedHandle = payload.handle?.startsWith('@') ? payload.handle : `@${payload.handle || 'user'}`;
       const career: CareerID = {
         ...DEFAULT_CAREER_ID,
         full_name: payload.full_name || 'Aarav Sharma',
-        handle: payload.handle?.startsWith('@') ? payload.handle : `@${payload.handle || 'user'}`,
+        handle: formattedHandle,
         target_role: payload.target_role || 'Full Stack Developer',
       };
       setLocal('career_mock_profile', career);
+      const token = 'demo-token-' + Date.now();
+      localStorage.setItem('career_token', token);
+      localStorage.setItem('career_handle', career.handle);
       return {
-        access_token: 'demo-token-' + Date.now(),
+        access_token: token,
         token_type: 'bearer',
+        handle: career.handle,
+        user_id: career.user_id,
         user: {
           id: career.user_id,
           email: payload.email,
@@ -143,12 +171,20 @@ export const api = {
   login: async (payload: { email: string; password: string }) => {
     try {
       const res = await apiClient.post('/auth/login', payload);
+      if (!res.data || typeof res.data !== 'object' || !res.data.access_token) {
+        throw new Error('Invalid backend response');
+      }
       return res.data;
     } catch {
       const career = getLocal<CareerID>('career_mock_profile', DEFAULT_CAREER_ID);
+      const token = 'demo-token-' + Date.now();
+      localStorage.setItem('career_token', token);
+      localStorage.setItem('career_handle', career.handle);
       return {
-        access_token: 'demo-token-' + Date.now(),
+        access_token: token,
         token_type: 'bearer',
+        handle: career.handle,
+        user_id: career.user_id,
         user: {
           id: career.user_id,
           email: payload.email || 'aarav.sharma@example.edu',
@@ -161,6 +197,9 @@ export const api = {
   getMe: async () => {
     try {
       const res = await apiClient.get('/auth/me');
+      if (!res.data || typeof res.data !== 'object' || !res.data.id) {
+        throw new Error('Invalid backend response');
+      }
       return res.data;
     } catch {
       const career = getLocal<CareerID>('career_mock_profile', DEFAULT_CAREER_ID);
@@ -184,6 +223,9 @@ export const api = {
   }> => {
     try {
       const res = await apiClient.get('/profile/me');
+      if (!res.data || typeof res.data !== 'object' || !res.data.career_id) {
+        throw new Error('Invalid backend response');
+      }
       return res.data;
     } catch {
       const career = getLocal<CareerID>('career_mock_profile', DEFAULT_CAREER_ID);
