@@ -70,10 +70,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const login = async (email: string, pass: string) => {
     try {
       const res = await api.login({ email, password: pass });
+      const resHandle = res.handle || res.user?.career_id?.handle || '@aarav_sharma';
       localStorage.setItem('career_token', res.access_token);
-      localStorage.setItem('career_handle', res.handle);
+      localStorage.setItem('career_handle', resHandle);
       setToken(res.access_token);
-      setHandle(res.handle);
+      setHandle(resHandle);
       await refreshProfile();
     } catch (err) {
       // Fallback: grant instant demo access
@@ -84,10 +85,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const register = async (payload: { email: string; password: string; full_name: string; handle: string; target_role?: string }) => {
     try {
       const res = await api.register(payload);
+      const resHandle = res.handle || res.user?.career_id?.handle || `@${payload.handle.replace('@', '')}`;
       localStorage.setItem('career_token', res.access_token);
-      localStorage.setItem('career_handle', res.handle);
+      localStorage.setItem('career_handle', resHandle);
       setToken(res.access_token);
-      setHandle(res.handle);
+      setHandle(resHandle);
       await refreshProfile();
     } catch (err) {
       // Fallback: create client profile
