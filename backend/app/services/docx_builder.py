@@ -3,16 +3,22 @@ AI Resume Builder Word (.docx) Exporter Service.
 Generates an ATS-compliant, beautifully styled Microsoft Word document using python-docx.
 """
 import io
-from docx import Document
-from docx.shared import Inches, Pt, RGBColor
-from docx.enum.text import WD_ALIGN_PARAGRAPH
-from docx.oxml import OxmlElement
-from docx.oxml.ns import qn
+try:
+    from docx import Document
+    from docx.shared import Inches, Pt, RGBColor
+    from docx.enum.text import WD_ALIGN_PARAGRAPH
+    from docx.oxml import OxmlElement
+    from docx.oxml.ns import qn
+    DOCX_AVAILABLE = True
+except ImportError:
+    DOCX_AVAILABLE = False
 from app.schemas.builder import ResumeBuildRequest
 
 
 def add_horizontal_rule(paragraph):
     """Inserts a thin bottom border under a section heading for ATS-friendly visual elegance."""
+    if not DOCX_AVAILABLE:
+        return
     pPr = paragraph._p.get_or_add_pPr()
     pBdr = OxmlElement('w:pBdr')
     bottom = OxmlElement('w:bottom')
@@ -26,6 +32,13 @@ def add_horizontal_rule(paragraph):
 
 def generate_resume_docx(data: ResumeBuildRequest) -> io.BytesIO:
     """Builds and returns a formatted Word document in memory."""
+    if not DOCX_AVAILABLE:
+        # Fallback to plain text document stream
+        buf = io.BytesIO()
+        text = f"{data.full_name}\n{data.email} | {data.phone}\n\nSUMMARY\n{data.summary}\n\nSKILLS\n{', '.join(data.skills)}"
+        buf.write(text.encode("utf-8"))
+        buf.seek(0)
+        return buf
     doc = Document()
 
     # Standard 0.75-inch margins

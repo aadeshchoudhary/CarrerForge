@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 import { Sparkles, ShieldCheck, ArrowRight, Lock, Mail, User, AtSign, Loader2 } from 'lucide-react';
 
 export const AuthPage: React.FC = () => {
-  const { login, register } = useAuth();
+  const { login, register, setDemoUser } = useAuth();
   const [isRegister, setIsRegister] = useState<boolean>(false);
   const [email, setEmail] = useState<string>('aarav.sharma@college.edu');
   const [password, setPassword] = useState<string>('strongPassword123');
@@ -36,27 +36,8 @@ export const AuthPage: React.FC = () => {
     }
   };
 
-  const handleDemoSignIn = async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      // Try login first; if user doesn't exist yet, auto-register demo user
-      try {
-        await login('demo.student@college.edu', 'demoPassword123');
-      } catch (loginErr) {
-        await register({
-          email: 'demo.student@college.edu',
-          password: 'demoPassword123',
-          full_name: 'Demo Student',
-          handle: 'demo_scholar',
-          target_role: 'Full Stack Engineer',
-        });
-      }
-    } catch (err: any) {
-      setError('Failed to initiate demo session.');
-    } finally {
-      setLoading(false);
-    }
+  const handleDemoSignIn = () => {
+    setDemoUser();
   };
 
   return (

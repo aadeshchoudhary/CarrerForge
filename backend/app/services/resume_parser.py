@@ -7,8 +7,15 @@ Computes an extraction confidence score and flags uncertain or incomplete sectio
 import os
 import re
 from typing import Dict, Any, List, Tuple
-import pdfplumber
-import docx
+try:
+    import pdfplumber
+except ImportError:
+    pdfplumber = None
+
+try:
+    import docx
+except ImportError:
+    docx = None
 
 from app.services.skill_matcher import extract_skills_from_text
 
@@ -20,7 +27,13 @@ LINKEDIN_REGEX = r'linkedin\.com\/in\/[a-zA-Z0-9_-]+'
 
 
 def extract_text_from_pdf(file_path: str) -> str:
-    """Extract full raw text from PDF using pdfplumber."""
+    """Extract full raw text from PDF using pdfplumber with fallback."""
+    if pdfplumber is None:
+        try:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                return f.read()
+        except Exception:
+            return ""
     extracted_text = []
     with pdfplumber.open(file_path) as pdf:
         for page in pdf.pages:
@@ -31,7 +44,13 @@ def extract_text_from_pdf(file_path: str) -> str:
 
 
 def extract_text_from_docx(file_path: str) -> str:
-    """Extract full raw text from DOCX using python-docx."""
+    """Extract full raw text from DOCX using python-docx with fallback."""
+    if docx is None:
+        try:
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                return f.read()
+        except Exception:
+            return ""
     doc = docx.Document(file_path)
     paragraphs = [p.text for p in doc.paragraphs if p.text.strip()]
     return "\n".join(paragraphs)

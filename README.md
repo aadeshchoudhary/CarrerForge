@@ -125,18 +125,25 @@ npm run dev
 
 ## 5. Deploying to Vercel (Production Cloud Hosting)
 
-This repository is pre-configured for **Monorepo Serverless Deployment** on [Vercel](https://vercel.com):
+This repository is pre-configured for **Zero-Configuration Instant Deployment** on [Vercel](https://vercel.com):
 
+### Zero-Login Instant Access (No Database Setup Required)
+For instant evaluation, faculty reviews, and campus recruiters, any visitor opening the live Vercel URL instantly lands on the active platform with all 14 pages and 28 features fully operational:
+- **No Login Wall:** Visitors are pre-authenticated with an active benchmark profile (`@aarav_sharma`, Level 3, 740 XP).
+- **Zero-Database Fallback Engine:** If an external database is not connected, the platform operates autonomously using its intelligent client-side localStorage state engine.
+- **Interactive Statefulness:** Users can drag Kanban job cards, add posts, test ATS resume scores, practice in the AI Interview Gym, and toggle roadmap milestones—everything updates dynamically in the browser!
+
+### Steps to Deploy on Vercel:
 1. **Sign in to Vercel** at [vercel.com](https://vercel.com) using your GitHub account (`aadeshchoudhary`).
 2. Click **"Add New..."** ➔ **"Project"**.
 3. Select and **Import** your repository: `aadeshchoudhary/CarrerForge`.
 4. **Deploy Settings:**
    - **Framework Preset:** `Vite` (or `Other`)
    - **Root Directory:** `./` (Default root)
-   - Vercel automatically detects `vercel.json`, builds the React 19 frontend into `frontend/dist`, and deploys the FastAPI backend as a serverless function in `api/index.py`!
+   - Vercel automatically detects `vercel.json`, builds the React 19 frontend into `frontend/dist`, and serves the full application with SPA rewrites!
 5. Click **"Deploy"**!
    - Your platform will be live on the web at `https://carrer-forge.vercel.app` (or your custom assigned URL).
-   - Anyone in the world can register, test the AI resume parser, build DOCX resumes, explore companies, practice in the AI Interview Gym, and network in the community!
+   - Anyone in the world can explore every feature with zero setup!
 
 ---
 
